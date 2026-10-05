@@ -1,0 +1,87 @@
+'use strict';
+
+// Cấu hình trung tâm — mọi giá trị đều có thể ghi đè bằng biến môi trường.
+
+function csv(name, fallback) {
+  const v = process.env[name];
+  return v && v.trim() ? v.split(',').map(s => s.trim()).filter(Boolean) : fallback;
+}
+
+const ENABLED_LIST = csv('PROVIDERS', null); // VD: PROVIDERS=kkphim,nguonc → chỉ bật 2 nguồn này
+
+const PROVIDERS = {
+  kkphim: {
+    id: 'kkphim',
+    name: 'KKphim',
+    prefix: 'kk_',
+    apiUrl: process.env.KKPHIM_API_URL || 'https://phimapi.com',
+    cdnImage: process.env.KKPHIM_CDN_IMAGE || 'https://phimimg.com',
+    referer: 'https://phimapi.com/',
+    enabled: ENABLED_LIST ? ENABLED_LIST.includes('kkphim') : true,
+    proxy: false
+  },
+  ophim: {
+    id: 'ophim',
+    name: 'OPhim',
+    prefix: 'op_',
+    apiUrl: process.env.OPHIM_API_URL || 'https://www.ophim.live',
+    cdnImage: process.env.OPHIM_CDN_IMAGE || 'https://img.ophim.live',
+    siteUrl: process.env.OPHIM_SITE_URL || 'https://www.ophim.live',
+    referer: 'https://www.ophim.live/',
+    enabled: ENABLED_LIST ? ENABLED_LIST.includes('ophim') : true,
+    proxy: false
+  },
+  nguonc: {
+    id: 'nguonc',
+    name: 'NguonC',
+    prefix: 'nc_',
+    apiUrl: process.env.NGUONC_API_URL || 'https://phim.nguonc.com/api',
+    apiFallbacks: ['https://nguonc.com/api'],
+    siteUrl: 'https://phim.nguonc.com',
+    referer: 'https://phim.nguonc.com/',
+    enabled: ENABLED_LIST ? ENABLED_LIST.includes('nguonc') : true,
+    // Link StreamC của NguonC cần Referer → mặc định đi qua HLS proxy của addon
+    proxy: true
+  },
+  vnstream: {
+    id: 'vnstream',
+    name: 'VnStream',
+    prefix: 'vn_',
+    apiUrl: process.env.VNSTREAM_API_URL || 'https://egluy2hhb21vaw5ndw9pbmhl.darkbytes.xyz/api/v1',
+    siteUrl: process.env.VNSTREAM_SITE_URL || 'https://cobephim.biz',
+    referer: 'https://cobephim.biz/',
+    enabled: ENABLED_LIST ? ENABLED_LIST.includes('vnstream') : true,
+    proxy: false
+  },
+  phim4k: {
+    id: 'phim4k',
+    name: 'Phim4K',
+    prefix: 'p4k_',
+    apiUrl: process.env.PHIM4K_API_URL || 'https://vsmov.com/api',
+    siteUrl: process.env.PHIM4K_SITE_URL || 'https://vsmov.com',
+    referer: 'https://vsmov.com/',
+    enabled: ENABLED_LIST ? ENABLED_LIST.includes('phim4k') : true,
+    proxy: false
+  }
+};
+
+const CONFIG = {
+  port: parseInt(process.env.PORT, 10) || 7001,
+  timeout: parseInt(process.env.TIMEOUT, 10) || 8000,
+  streamTimeout: parseInt(process.env.TIMEOUT_STREAM, 10) || 9000,
+  cinemetaUrl: process.env.CINEMETA_URL || 'https://v3-cinemeta.strem.io',
+  userAgent:
+    process.env.USER_AGENT ||
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  // Danh sách nguồn được bọc qua HLS proxy của addon ("*" = tất cả, "none" = không nguồn nào)
+  proxyProviders: csv('PROXY_PROVIDERS', ['nguonc']),
+  manifest: {
+    id: 'community.vietstream',
+    version: process.env.VERSION || '1.0.0',
+    name: 'VietStream · Phim Việt',
+    description:
+      'Xem phim Việt đa nguồn: KKphim, OPhim, NguonC, Phim4K, VnStream — Vietsub, Lồng tiếng, Thuyết minh. Tương thích Nuvio & Stremio.'
+  }
+};
+
+module.exports = { CONFIG, PROVIDERS };
