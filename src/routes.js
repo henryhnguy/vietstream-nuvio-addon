@@ -1,6 +1,8 @@
 'use strict';
 
 const express = require('express');
+const path = require('node:path');
+const fs = require('node:fs');
 const { CONFIG, PROVIDERS } = require('./config');
 const cinemeta = require('./cinemeta');
 const { cached, getJson } = require('./utils');
@@ -107,6 +109,25 @@ router.get('/logo.svg', (req, res) => {
     </svg>`
   );
 });
+
+// ---------- Host plugin Nuvio trên chính server này ----------
+// (tránh phụ thuộc raw.githubusercontent.com — hay bị chặn ở Việt Nam)
+const PLUGIN_DIR = path.join(__dirname, '..', 'nuvio-plugin');
+
+router.get('/nuvio-plugin/manifest.json', (req, res) => {
+  const base = getBaseUrl(req);
+  try {
+    const m = JSON.parse(fs.readFileSync(path.join(PLUGIN_DIR, 'manifest.json'), 'utf8'));
+    (m.scrapers || []).forEach((s) => {
+      if (s.logo) s.logo = `${base}/nuvio-plugin/logo.svg`;
+    });
+    res.json(m);
+  } catch (e) {
+    res.status(500).json({ err: 'plugin manifest missing' });
+  }
+});
+
+router.use('/nuvio-plugin', express.static(PLUGIN_DIR));
 
 router.get('/', (req, res) => {
   const base = getBaseUrl(req);

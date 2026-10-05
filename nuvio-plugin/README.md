@@ -14,20 +14,49 @@ không cần server riêng:
 
 ## 🔗 URL cài plugin
 
+**Cách 1 — qua Render của bạn (khuyên dùng, không phụ thuộc GitHub):**
+
+```
+https://<ten-service>.onrender.com/nuvio-plugin/manifest.json
+```
+
+(Addon server tự host plugin ở đường dẫn này — thay bằng URL Render thật của bạn.)
+
+**Cách 2 — GitHub raw (dự phòng):**
+
 ```
 https://raw.githubusercontent.com/henryhnguy/vietstream-nuvio-addon/main/nuvio-plugin/manifest.json
 ```
 
+> ⚠️ raw.githubusercontent.com hay bị chặn/chậm ở một số nhà mạng Việt Nam — nếu cách 2 không thêm được repo, dùng cách 1.
+
 ## 📲 Cài vào Nuvio
 
-1. Mở **Nuvio → Settings → Plugins (Local Plugins)** → chọn **Import / Add từ URL**.
-2. Dán URL manifest ở trên → xác nhận.
-3. Bật scraper **VietStream** trong danh sách plugin.
-4. Mở bất kỳ phim/series nào (Nuvio tra TMDB) → mục **Sources/Streams** sẽ hiện các luồng
+> ❗ **Điều kiện bắt buộc:** app phải là bản **full** tải từ
+> [GitHub Releases của NuvioMobile](https://github.com/NuvioMedia/NuvioMobile/releases)
+> (hoặc NuvioTV). **Bản cài từ Google Play đã bị tắt hẳn tính năng plugin** (flavor `playstore`)
+> — plugin sẽ không bao giờ chạy dù cài đúng cách.
+
+1. Mở **Nuvio → Settings → Plugins** → **+ / Add repository** → dán URL manifest ở trên.
+2. Repo hiện ra với scraper **VietStream** → bật lên.
+3. Mở bất kỳ phim/series nào (Nuvio tra TMDB) → mục **Sources/Streams** sẽ hiện các luồng
    `VietStream · KKphim`, `VietStream · Phim4K`… kèm nhãn audio (Vietsub • Lồng Tiếng • Thuyết Minh).
 
-> Nếu bạn dùng bản có **Plugin Tester** (Settings → Plugin Tester): dán cùng URL manifest trên để xem log
-> và kết quả từng stream (`adb logcat -s "Plugin:*"` khi cần debug).
+## 🩺 Plugin không chạy? Kiểm tra theo thứ tự
+
+1. **App có phải bản full không?** Settings → Plugins: nếu **không có mục Plugins** hoặc thêm repo xong
+   không thấy gì thay đổi → bạn đang dùng bản Play Store → cài lại APK bản full từ GitHub Releases.
+2. **Thêm repo bằng Plugin Tester** (Settings → Plugin Tester → dán URL manifest) — nơi này hiện
+   log và lỗi cụ thể. Log mẫu khi chạy đúng:
+   ```
+   VietStream: movie 872586 S-E- | titles: Oppenheimer | year: 2023
+   VietStream [kkphim]: 1 stream
+   VietStream: tong cong 3 stream
+   ```
+   Nếu thấy `titles:` rỗng hoặc `TMDB ... THIEU` → key TMDB của bản app thiếu (dùng bản release chính thức).
+3. **Logcat** (khi nối adb): `adb logcat -s "Plugin:*"`.
+4. **Repo đã thêm nhưng mở phim không có stream nào** — vào Settings → Plugins → mở repo →
+   Refresh, rồi thử phim khác (một số phim không có trên nguồn Việt là bình thường).
 
 ## ⚙️ Tắt / bật từng nguồn
 

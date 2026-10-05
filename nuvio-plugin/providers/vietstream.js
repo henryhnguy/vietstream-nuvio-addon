@@ -13,7 +13,12 @@ async function getStreams(tmdbId, mediaType, season, episode) {
   try {
     var type = mediaType === 'tv' || mediaType === 'series' || mediaType === 'show' ? 'tv' : 'movie';
     var info = await tmdbInfo(tmdbId, type);
-    if (!info || (!info.titles || !info.titles.length)) return streams;
+    if (!info || (!info.titles || !info.titles.length)) {
+      console.warn('VietStream: TMDB tra ve rong cho ' + tmdbId + ' (key=' + (globalThis.TMDB_API_KEY ? 'co' : 'THIEU') + ')');
+      return streams;
+    }
+    console.log('VietStream: ' + type + ' ' + tmdbId + ' S' + (season || '-') + 'E' + (episode || '-') +
+      ' | titles: ' + info.titles.join(' | ') + ' | year: ' + info.year);
 
     var seasonNum = parseInt(season, 10) || 1;
     var episodeNum = parseInt(episode, 10) || 1;
@@ -25,15 +30,18 @@ async function getStreams(tmdbId, mediaType, season, episode) {
     } catch (e) { /* ignore */ }
 
     var providers = [];
-    if (!disabled.kkphim) providers.push(kkphimStreams);
-    if (!disabled.ophim) providers.push(ophimStreams);
-    if (!disabled.nguonc) providers.push(nguoncStreams);
-    if (!disabled.vnstream) providers.push(vnstreamStreams);
-    if (!disabled.phim4k) providers.push(phim4kStreams);
+    if (!disabled.kkphim) providers.push({ name: 'kkphim', fn: kkphimStreams });
+    if (!disabled.ophim) providers.push({ name: 'ophim', fn: ophimStreams });
+    if (!disabled.nguonc) providers.push({ name: 'nguonc', fn: nguoncStreams });
+    if (!disabled.vnstream) providers.push({ name: 'vnstream', fn: vnstreamStreams });
+    if (!disabled.phim4k) providers.push({ name: 'phim4k', fn: phim4kStreams });
 
     var results = await Promise.allSettled(
-      providers.map(function (fn) {
-        return fn(info, type, seasonNum, episodeNum).catch(function () { return []; });
+      providers.map(function (p) {
+        return p.fn(info, type, seasonNum, episodeNum).then(
+          function (s) { console.log('VietStream [' + p.name + ']: ' + s.length + ' stream'); return s; },
+          function (e) { console.warn('VietStream [' + p.name + '] loi: ' + (e && e.message)); return []; }
+        );
       })
     );
     results.forEach(function (r) {
@@ -47,6 +55,7 @@ async function getStreams(tmdbId, mediaType, season, episode) {
       seen[s.url] = true;
       return true;
     });
+    console.log('VietStream: tong cong ' + streams.length + ' stream');
   } catch (e) {
     console.error('VietStream getStreams error: ' + (e && e.message));
   }
