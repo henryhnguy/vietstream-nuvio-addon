@@ -1,0 +1,19 @@
+# Render Blueprint — tự động deploy khi bấm nút "Deploy to Render"
+services:
+  - type: web
+    name: vietstream-addon
+    runtime: node
+    plan: free
+    region: singapore   # gần Việt Nam nhất; có thể đổi: oregon | frankfurt | ohio | virginia
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Tuỳ chọn: bật nguồn khi deploy — bỏ comment và sửa nếu cần
+      # - key: PROVIDERS
+      #   value: kkphim,nguonc,phim4k,vnstream,ophim
+      # - key: PROXY_PROVIDERS
+      #   value: nguonc

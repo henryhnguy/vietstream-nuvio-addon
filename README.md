@@ -51,20 +51,26 @@ Trang chủ addon (xem trạng thái nguồn): http://localhost:7001/
 
 Stremio v4/Web cài y hệt: dán manifest URL vào ô *Add addon*.
 
-## ☁️ Deploy (để điện thoại dùng mọi nơi)
+## ☁️ Deploy (một cú bấm)
 
-Một nút bấm trên các nền tảng Node.js miễn phí/giá rẻ:
+**Render — khuyên dùng, gói free** (region Singapore gần Việt Nam nhất):
 
-- **Render** — New Web Service → trỏ về repo này → Build: `npm install`, Start: `npm start` (Render tự set `PORT`).
-- **Railway / Fly.io / Koyeb** — tương tự (Node service).
-- **Docker / VPS**:
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/henryhnguy/vietstream-nuvio-addon)
+
+Bấm nút → đăng nhập Render bằng GitHub → chọn tên service → **Apply**. Xong lấy URL dạng `https://vietstream-addon.onrender.com`, manifest là `https://vietstream-addon.onrender.com/manifest.json`.
+
+> Gói free của Render sẽ ngủ sau ~15 phút không ai truy cập; lần mở đầu tiên mất 30–60 giây để thức dậy (Nuvio chỉ cần đợi thêm chút khi mở lần đầu).
+
+**Railway** (có giới hạn free hàng tháng):
+
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.app/new/template?template=https://github.com/henryhnguy/vietstream-nuvio-addon)
+
+**Fly.io / VPS (Docker):** repo có sẵn `fly.toml` — cài [flyctl](https://fly.io/docs/flyctl/), chạy `flyctl launch` rồi `flyctl deploy`. Hoặc VPS bất kỳ:
 
 ```bash
 docker build -t vietstream-addon .
 docker run -d -p 7001:7001 --name vietstream vietstream-addon
 ```
-
-> Sau khi có URL public (VD `https://xxx.onrender.com`), manifest là `https://xxx.onrender.com/manifest.json`.
 
 ## ⚙️ Biến môi trường
 
