@@ -5,6 +5,10 @@ Việt theo giao thức addon chuẩn của Stremio nên cài trực tiếp vào
 
 Đã test thật với phim điện ảnh & phim bộ (IMDb ID → stream m3u8 phát trực tiếp).
 
+> 📺 **Muốn dùng không cần server?** Repo còn kèm **plugin Nuvio** (JS chạy trong app, hệ plugin NuvioMobile) tại
+> [`nuvio-plugin/`](nuvio-plugin/README.md) — cài bằng URL:
+> `https://raw.githubusercontent.com/henryhnguy/vietstream-nuvio-addon/main/nuvio-plugin/manifest.json`
+
 ## 📡 Các nguồn được hỗ trợ
 
 | Nguồn | API | Trạng thái | Ghi chú |
