@@ -62,6 +62,15 @@ const PROVIDERS = {
     referer: 'https://vsmov.com/',
     enabled: ENABLED_LIST ? ENABLED_LIST.includes('phim4k') : true,
     proxy: false
+  },
+  tophim: {
+    id: 'tophim',
+    name: 'Tophim (Motchill)',
+    prefix: 'tp_',
+    apiUrl: process.env.TOPHIM_API_URL || 'https://tophim.top',
+    referer: 'https://tophim.top/',
+    enabled: ENABLED_LIST ? ENABLED_LIST.includes('tophim') : true,
+    proxy: false
   }
 };
 

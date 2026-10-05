@@ -15,7 +15,8 @@ const CTORS = {
   ophim: 'OphimProvider',
   nguonc: 'NguoncProvider',
   vnstream: 'VnstreamProvider',
-  phim4k: 'Phim4kProvider'
+  phim4k: 'Phim4kProvider',
+  tophim: 'TophimProvider'
 };
 
 const providers = {};

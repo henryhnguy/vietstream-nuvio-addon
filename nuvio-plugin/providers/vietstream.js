@@ -35,6 +35,7 @@ async function getStreams(tmdbId, mediaType, season, episode) {
     if (!disabled.nguonc) providers.push({ name: 'nguonc', fn: nguoncStreams });
     if (!disabled.vnstream) providers.push({ name: 'vnstream', fn: vnstreamStreams });
     if (!disabled.phim4k) providers.push({ name: 'phim4k', fn: phim4kStreams });
+    if (!disabled.tophim) providers.push({ name: 'tophim', fn: tophimStreams });
 
     var results = await Promise.allSettled(
       providers.map(function (p) {
@@ -85,7 +86,7 @@ async function tmdbInfo(tmdbId, type) {
     var n = normTitle(t);
     if (t && n && titles.indexOf(t) < 0) titles.push(t);
   });
-  return { titles: titles, year: year, mediaType: type };
+  return { titles: titles, year: year, mediaType: type, tmdbId: String(tmdbId) };
 }
 
 /* ---------------- Helper chung ---------------- */
@@ -649,6 +650,97 @@ async function resolveVsmovEmbed(embedUrl, referer) {
   if (bm && vh) return bm[1] + '/stream/' + vh[1] + '/master.m3u8';
   var m = html.match(/https?:\/\/[^"'\s]+\.m3u8[^"'\s]*/i);
   return m ? m[0] : null;
+}
+
+/* ---------------- Nguồn 6: Tophim (tophim.top — nhà Motchill/PhimMoi) ---------------- */
+
+// Site Next.js: trang /phim/{slug} nhúng JSON tập + video_url m3u8.
+// Slug còn có dạng TMDB trực tiếp: movie-<tmdbId> và tv-<tmdbId>-<season> -> fast path.
+
+function tophimParsePage(html) {
+  var b = unescapeSsr(html);
+  var t = (html.match(/<title>([^<]+)<\/title>/) || [])[1] || '';
+  var tm = t.match(/Xem Phim\s+(.+?)\s+\(([^()]*)\)\s+\((\d{4})\)/);
+  var re = /"([^"]+)","name":"([^"]+)","slug":"([^"]+)","video_url":"([^"]+)"/g;
+  var groups = {};
+  var count = 0;
+  var m;
+  while ((m = re.exec(b))) {
+    var label = m[1].trim().replace(/^#/, '');
+    var url = m[4];
+    if (!/^https?:\/\//i.test(url) || /embed\.php|\/embed/i.test(url)) continue; // chỉ lấy m3u8 trực tiếp
+    if (!groups[label]) groups[label] = [];
+    groups[label].push({ name: m[2], slug: m[3], m3u8: url, embed: null });
+    count++;
+  }
+  if (!count) return null;
+  var servers = Object.keys(groups).map(function (label) {
+    return { serverName: label, items: groups[label] };
+  });
+  var hasNumbered = servers.some(function (s) {
+    return s.items.some(function (e) { return /tập|\d/.test(e.name) && !/full/i.test(e.name); });
+  });
+  return {
+    name: tm ? tm[1].trim() : '',
+    originalName: tm && tm[2] ? tm[2].trim() : '',
+    year: tm ? parseInt(tm[3], 10) : null,
+    quality: /\b(4K|2160P|1080P|HD)\b/i.test(t) ? 'HD' : 'HD',
+    type: hasNumbered && count > 1 ? 'series' : 'movie',
+    servers: servers
+  };
+}
+
+async function tophimStreams(info, type, season, episode) {
+  var site = 'https://tophim.top';
+  var referer = 'https://tophim.top/';
+  var headers = { 'User-Agent': UA, Referer: referer };
+  var isMovie = type !== 'tv';
+  var epNum = isMovie ? null : parseInt(episode, 10) || 1;
+
+  // 1) fast path: slug theo TMDB id (movie-872586 / tv-1396-1)
+  var slugs = [];
+  if (info.tmdbId) {
+    slugs.push(isMovie ? 'movie-' + info.tmdbId : 'tv-' + info.tmdbId + '-' + (parseInt(season, 10) || 1));
+  }
+  // 2) dự phòng: search suggestions -> slug
+  try {
+    var results = await Promise.all(
+      info.titles.map(function (t) {
+        return fetchJson(site + '/api/search/suggestions?q=' + encodeURIComponent(t), headers);
+      })
+    );
+    results.forEach(function (d) {
+      var arr = (d && d.movies) || [];
+      arr.forEach(function (mv) {
+        if (mv && mv.slug && slugs.indexOf(mv.slug) < 0) slugs.push(mv.slug);
+      });
+    });
+  } catch (e) { /* ignore */ }
+
+  for (var c = 0; c < slugs.length; c++) {
+    var html = await fetchText(site + '/phim/' + encodeURIComponent(slugs[c]), {
+      headers: headers
+    });
+    if (!html) continue;
+    var d = tophimParsePage(html);
+    if (!d) continue;
+    var streams = [];
+    for (var i = 0; i < d.servers.length; i++) {
+      var server = d.servers[i];
+      var ep = pickEpisode(server.items, epNum, isMovie);
+      if (!ep || !ep.m3u8) continue;
+      streams.push(
+        makeStream(
+          'Tophim', referer, d.name,
+          isMovie ? ep.name || 'Full' : 'Tập ' + (epNum || 1),
+          detectAudio(server.serverName, 'Vietsub'),
+          d.quality, ep.m3u8
+        )
+      );
+    }
+    if (streams.length) return streams;
+  }
+  return [];
 }
 
 /* ---------------- Xuất hàm cho runtime Nuvio ---------------- */

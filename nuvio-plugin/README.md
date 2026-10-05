@@ -7,10 +7,14 @@ không cần server riêng:
 | Nguồn | API | Ghi chú |
 |---|---|---|
 | KKphim | `phimapi.com` | m3u8 trực tiếp, Vietsub / Lồng tiếng / Thuyết minh |
+| Tophim (Motchill) | `tophim.top` | Nhà Motchill/PhimMoi còn sống; slug theo TMDB ID nên tra cực nhanh |
 | NguonC | `phim.nguonc.com/api` | m3u8 trực tiếp hoặc tự giải mã link StreamC |
 | Phim4K | `vsmov.com/api` | tự giải mã embed → `master.m3u8` |
 | OPhim | `ophim.live` (đổi được) | domain chết sẽ tự bỏ qua |
 | VnStream | cobephim.biz | scrape trang xem phim |
+
+> ℹ️ Motchill/PhimVui cũ đã chết domain (đã kiểm tra) — Tophim là nhánh còn sống của cùng hệ nhà.
+> Khi Motchill ra domain mới cùng CMS: sửa biến `site` trong hàm `tophimStreams()`.
 
 ## 🔗 URL cài plugin
 
@@ -60,7 +64,7 @@ https://raw.githubusercontent.com/henryhnguy/vietstream-nuvio-addon/main/nuvio-p
 
 ## ⚙️ Tắt / bật từng nguồn
 
-Plugin đọc biến settings `disable` (mảng id nguồn: `kkphim`, `ophim`, `nguonc`, `vnstream`, `phim4k`).
+Plugin đọc biến settings `disable` (mảng id nguồn: `kkphim`, `tophim`, `nguonc`, `phim4k`, `ophim`, `vnstream`).
 Ví dụ tắt OPhim và VnStream:
 
 ```json

@@ -27,6 +27,9 @@ const CATALOG_DEFS = {
   phim4k: [
     { type: 'movie', id: 'phim4k-phim-le', name: 'Phim lẻ 4K (Phim4K)' },
     { type: 'series', id: 'phim4k-phim-bo', name: 'Phim bộ 4K (Phim4K)' }
+  ],
+  tophim: [
+    { type: 'movie', id: 'tophim-moi', name: 'Mới nhất (Tophim/Motchill)' }
   ]
 };
 

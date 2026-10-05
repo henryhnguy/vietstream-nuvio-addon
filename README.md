@@ -16,8 +16,13 @@ Việt theo giao thức addon chuẩn của Stremio nên cài trực tiếp vào
 | **KKphim** | `phimapi.com` | ✅ Hoạt động tốt | m3u8 trực tiếp, có sẵn IMDb ID, catalog + thể loại đầy đủ |
 | **NguonC** | `phim.nguonc.com/api` | ✅ Hoạt động tốt | Có m3u8 trực tiếp hoặc link StreamC (addon tự giải mã) |
 | **Phim4K** | `vsmov.com/api` | ✅ Hoạt động | Nhóm VSMOV 4K, tự giải mã embed → `master.m3u8`, nhiều server Thuyết minh |
+| **Tophim (Motchill)** | `tophim.top` | ✅ Hoạt động | Hậu duệ còn sống của nhà **Motchill / PhimMoi** (site tự nhận brand này), gộp thêm stream kkphim/ophim/nguonc; search API + slug theo TMDB ID |
 | **VnStream** | cobephim.biz (API riêng) | ⚠️ Tuỳ mạng | Lấy m3u8 từ trang xem phim; một số nhà mạng chặn, khi đó nguồn này tự bỏ qua |
 | **OPhim** | `ophim.live` (cấu hình được) | ⚠️ Tuỳ domain | OPhim gốc đã ngừng hoạt động; đổi domain bằng `OPHIM_API_URL` khi cần |
+
+> ℹ️ **Motchill & PhimVui**: các domain cũ (motchill.net, motchilltv.app, motchill.co, phimvui...) đã chết,
+> bị chiếm hoặc rao bán (đã kiểm tra thực tế). Tophim chính là nhánh còn hoạt động của cùng hệ nhà —
+> khi Motchill ra domain mới chạy cùng CMS, chỉ cần set `TOPHIM_API_URL` là dùng lại được ngay.
 
 Nguồn nào chết/không truy cập được **tự động bỏ qua**, không làm treo addon hay các nguồn khác.
 
@@ -86,6 +91,7 @@ docker run -d -p 7001:7001 --name vietstream vietstream-addon
 | `KKPHIM_API_URL` | `https://phimapi.com` | API KKphim |
 | `NGUONC_API_URL` | `https://phim.nguonc.com/api` | API NguonC (tự fallback `nguonc.com/api`) |
 | `PHIM4K_API_URL` | `https://vsmov.com/api` | API Phim4K/VSMOV |
+| `TOPHIM_API_URL` | `https://tophim.top` | API Tophim (nhà Motchill/PhimMoi) |
 | `OPHIM_API_URL` | `https://www.ophim.live` | API OPhim (đổi khi có domain clone mới) |
 | `VNSTREAM_API_URL` | (API cobephim) | API VnStream |
 | `VNSTREAM_SITE_URL` | `https://cobephim.biz` | Trang web VnStream |
