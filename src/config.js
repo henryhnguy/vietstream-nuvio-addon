@@ -71,6 +71,31 @@ const PROVIDERS = {
     referer: 'https://tophim.top/',
     enabled: ENABLED_LIST ? ENABLED_LIST.includes('tophim') : true,
     proxy: false
+  },
+  k20: {
+    id: 'k20',
+    name: 'K20',
+    prefix: 'k20_',
+    apiUrl: process.env.K20_API_URL || 'https://sc.k-20.xyz',
+    referer: 'https://sc.k-20.xyz/',
+    enabled: ENABLED_LIST ? ENABLED_LIST.includes('k20') : true,
+    proxy: false
+  },
+  xem20: {
+    id: 'xem20',
+    name: 'Xem20',
+    prefix: 'x20_',
+    apiUrl: process.env.XEM20_SITE_URL || 'https://xem20.net',
+    referer: `${process.env.XEM20_SITE_URL || 'https://xem20.net'}/`,
+    login: process.env.XEM20_LOGIN || '',
+    password: process.env.XEM20_PASSWORD || '',
+    enabled: !!(process.env.XEM20_LOGIN && process.env.XEM20_PASSWORD) &&
+      (ENABLED_LIST ? ENABLED_LIST.includes('xem20') : true),
+    proxy: false,
+    authTimeout: parseInt(process.env.XEM20_AUTH_TIMEOUT, 10) || 12000,
+    searchTimeout: parseInt(process.env.XEM20_SEARCH_TIMEOUT, 10) || 8000,
+    detailTimeout: parseInt(process.env.XEM20_DETAIL_TIMEOUT, 10) || 10000,
+    streamTimeout: parseInt(process.env.XEM20_STREAM_TIMEOUT, 10) || 12000
   }
 };
 
@@ -86,10 +111,10 @@ const CONFIG = {
   proxyProviders: csv('PROXY_PROVIDERS', ['nguonc']),
   manifest: {
     id: 'community.vietstream',
-    version: process.env.VERSION || '1.0.0',
+    version: process.env.VERSION || '1.1.0',
     name: 'VietStream · Phim Việt',
     description:
-      'Xem phim Việt đa nguồn: KKphim, OPhim, NguonC, Phim4K, VnStream — Vietsub, Lồng tiếng, Thuyết minh. Tương thích Nuvio & Stremio.'
+      'Xem phim Việt đa nguồn: KKphim, K20, Xem20 (tùy chọn), OPhim, NguonC, Phim4K, Tophim, VnStream — Vietsub, Lồng tiếng, Thuyết minh. Tương thích Nuvio & Stremio.'
   }
 };
 

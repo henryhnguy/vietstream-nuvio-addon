@@ -16,7 +16,9 @@ const CTORS = {
   nguonc: 'NguoncProvider',
   vnstream: 'VnstreamProvider',
   phim4k: 'Phim4kProvider',
-  tophim: 'TophimProvider'
+  tophim: 'TophimProvider',
+  k20: 'K20Provider',
+  xem20: 'Xem20Provider'
 };
 
 const providers = {};

@@ -14,6 +14,8 @@ Việt theo giao thức addon chuẩn của Stremio nên cài trực tiếp vào
 | Nguồn | API | Trạng thái | Ghi chú |
 |---|---|---|---|
 | **KKphim** | `phimapi.com` | ✅ Hoạt động tốt | m3u8 trực tiếp, có sẵn IMDb ID, catalog + thể loại đầy đủ |
+| **K20** | `sc.k-20.xyz` | ✅ Hoạt động tốt | Backend Stremio công khai, gộp NguonC / HH3D / STP / VSMOV / Yan; giữ direct/proxy HLS, headers và subtitles của từng stream |
+| **Xem20 (Xem14 cũ)** | `xem20.net` | 🔐 Tùy chọn | Nguồn Fshare/downfshare yêu cầu tài khoản; chỉ bật khi Render có `XEM20_LOGIN` + `XEM20_PASSWORD` |
 | **NguonC** | `phim.nguonc.com/api` | ✅ Hoạt động tốt | Có m3u8 trực tiếp hoặc link StreamC (addon tự giải mã) |
 | **Phim4K** | `vsmov.com/api` | ✅ Hoạt động | Nhóm VSMOV 4K, tự giải mã embed → `master.m3u8`, nhiều server Thuyết minh |
 | **Tophim (Motchill)** | `tophim.top` | ✅ Hoạt động | Hậu duệ còn sống của nhà **Motchill / PhimMoi** (site tự nhận brand này), gộp thêm stream kkphim/ophim/nguonc; search API + slug theo TMDB ID |
@@ -24,6 +26,9 @@ Việt theo giao thức addon chuẩn của Stremio nên cài trực tiếp vào
 > bị chiếm hoặc rao bán (đã kiểm tra thực tế). Tophim chính là nhánh còn hoạt động của cùng hệ nhà —
 > khi Motchill ra domain mới chạy cùng CMS, chỉ cần set `TOPHIM_API_URL` là dùng lại được ngay.
 
+> ⚠️ **Xem20 domain:** chỉ dùng `xem20.net`. Các domain `xem20.com`, `xem20.org`, `xem20.best`
+> là site cờ bạc không liên quan. Addon không tự đăng ký tài khoản, không commit/log credential, cookie hoặc ticket phát.
+
 Nguồn nào chết/không truy cập được **tự động bỏ qua**, không làm treo addon hay các nguồn khác.
 
 ## ✨ Tính năng
@@ -31,7 +36,8 @@ Nguồn nào chết/không truy cập được **tự động bỏ qua**, không
 - **Streams theo IMDb ID** — Nuvio mở bất kỳ phim nào (tt…), addon tra tên phim qua Cinemeta rồi tìm trên các nguồn Việt.
 - **Chấm điểm khớp thông minh** — ưu tiên IMDb ID trùng > tên gốc khớp tuyệt đối > khớp một phần, kèm kiểm tra năm sản xuất và số mùa ("Phần N") để tránh nhầm phim bộ nhiều mùa.
 - **Ghi nhãn audio** — mỗi stream ghi rõ `Vietsub / Lồng Tiếng / Thuyết Minh / Song Ngữ` + chất lượng (HD/FHD/4K) để phân biệt ngay trong danh sách stream.
-- **Catalog cho Discover** — Phim lẻ, Phim bộ, Chiếu rạp, Hoạt hình, 4K… kèm lọc **thể loại** (Hành Động, Kinh Dị, Tình Cảm…) và phân trang.
+- **Catalog cho Discover** — Phim lẻ, Phim bộ, Chiếu rạp, Hoạt hình, 4K…; K20 bổ sung catalog đa nguồn và tìm kiếm riêng.
+- **Xem20 đăng nhập tùy chọn** — giữ cookie/CSRF ở server, trả direct `downfshare` play URL; không proxy video qua Render để bảo vệ quota.
 - **Tìm kiếm** — gõ tên phim (tiếng Việt không dấu hoặc tiếng Anh) là tìm được trên tất cả nguồn.
 - **Meta + danh sách tập** — mở phim từ catalog có đầy đủ poster, mô tả, danh sách tập để xem tiếp.
 - **HLS proxy chống 403** — bọc m3u8/segment, tự gắn Referer/Origin cho nguồn cần (mặc định: NguonC/StreamC).
@@ -43,6 +49,7 @@ Cần Node.js ≥ 18.
 
 ```bash
 npm install
+npm test
 npm start
 # → Manifest: http://localhost:7001/manifest.json
 ```
@@ -86,18 +93,30 @@ docker run -d -p 7001:7001 --name vietstream vietstream-addon
 | Biến | Mặc định | Ý nghĩa |
 |---|---|---|
 | `PORT` | `7001` | Cổng HTTP |
-| `PROVIDERS` | (tất cả) | Chỉ bật các nguồn liệt kê, VD `kkphim,nguonc,phim4k` |
+| `PROVIDERS` | (tất cả) | Chỉ bật các nguồn liệt kê, VD `kkphim,k20,nguonc,phim4k` (Xem20 vẫn cần credential) |
 | `PROXY_PROVIDERS` | `nguonc` | Nguồn đi qua HLS proxy: danh sách, `*` (tất cả), `none` |
 | `KKPHIM_API_URL` | `https://phimapi.com` | API KKphim |
 | `NGUONC_API_URL` | `https://phim.nguonc.com/api` | API NguonC (tự fallback `nguonc.com/api`) |
 | `PHIM4K_API_URL` | `https://vsmov.com/api` | API Phim4K/VSMOV |
 | `TOPHIM_API_URL` | `https://tophim.top` | API Tophim (nhà Motchill/PhimMoi) |
+| `K20_API_URL` | `https://sc.k-20.xyz` | Backend Stremio công khai K20 |
+| `XEM20_SITE_URL` | `https://xem20.net` | Domain phim Xem20/Xem14; không dùng các domain look-alike |
+| `XEM20_LOGIN` / `XEM20_PASSWORD` | — | Secret tài khoản Xem20; thiếu một trong hai thì nguồn tự ẩn |
 | `OPHIM_API_URL` | `https://www.ophim.live` | API OPhim (đổi khi có domain clone mới) |
 | `VNSTREAM_API_URL` | (API cobephim) | API VnStream |
 | `VNSTREAM_SITE_URL` | `https://cobephim.biz` | Trang web VnStream |
 | `CINEMETA_URL` | `https://v3-cinemeta.strem.io` | Cinemeta (tra IMDb → tên phim) |
 | `TIMEOUT` / `TIMEOUT_STREAM` | `8000` / `9000` | Timeout request (ms) |
 | `DEBUG` | — | Đặt `1` để log chi tiết catalog |
+
+### Bật Xem20 trên Render
+
+1. Mở service Render → **Environment** → **Add Environment Variable**.
+2. Thêm `XEM20_LOGIN` và `XEM20_PASSWORD` dưới dạng secret; không ghi giá trị vào repo.
+3. Nếu đã đặt `PROVIDERS`, thêm `xem20` vào danh sách.
+4. Redeploy/Restart service, rồi refresh addon trong Nuvio/Stremio.
+
+Xem20 phát trực tiếp từ `dl.downfshare.top`; addon không relay video qua Render free. Nếu login hết hạn, server tự đăng nhập lại một lần.
 
 ## 🔌 API của addon (cho dev)
 
@@ -106,7 +125,7 @@ docker run -d -p 7001:7001 --name vietstream vietstream-addon
 | `GET /manifest.json` | Manifest Stremio/Nuvio |
 | `GET /stream/movie/{tt…}.json` | Streams cho phim lẻ |
 | `GET /stream/series/{tt…}:{season}:{episode}.json` | Streams cho tập phim bộ |
-| `GET /stream/movie/kk_{slug}.json` | Stream trực tiếp theo ID nguồn (`kk_`, `op_`, `nc_`, `vn_`, `p4k_`) |
+| `GET /stream/movie/kk_{slug}.json` | Stream trực tiếp theo ID nguồn (`kk_`, `k20_`, `x20_`, `op_`, `nc_`, `vn_`, `p4k_`, `tp_`) |
 | `GET /catalog/{type}/{catalog}.json` | Catalog (VD `catalog/movie/kkphim-phim-le.json`) |
 | `GET /catalog/{type}/{catalog}/genre=X&skip=20.json` | Lọc thể loại / phân trang |
 | `GET /catalog/{type}/{catalog}/search=…json` | Tìm kiếm |

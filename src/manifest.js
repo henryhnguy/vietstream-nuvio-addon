@@ -28,8 +28,10 @@ const CATALOG_DEFS = {
     { type: 'movie', id: 'phim4k-phim-le', name: 'Phim lẻ 4K (Phim4K)' },
     { type: 'series', id: 'phim4k-phim-bo', name: 'Phim bộ 4K (Phim4K)' }
   ],
-  tophim: [
-    { type: 'movie', id: 'tophim-moi', name: 'Mới nhất (Tophim/Motchill)' }
+  tophim: [],
+  k20: [
+    { type: 'movie', id: 'k20-movie', name: 'Phim lẻ đa nguồn (K20)' },
+    { type: 'series', id: 'k20-series', name: 'Phim bộ đa nguồn (K20)' }
   ]
 };
 

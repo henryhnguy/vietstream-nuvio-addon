@@ -12,8 +12,14 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      # Tuỳ chọn: bật nguồn khi deploy — bỏ comment và sửa nếu cần
+      # Tuỳ chọn: bật một tập nguồn cụ thể — Xem20 cần thêm hai secret bên dưới.
       # - key: PROVIDERS
-      #   value: kkphim,nguonc,phim4k,vnstream,ophim
+      #   value: kkphim,k20,xem20,nguonc,phim4k,tophim,vnstream,ophim
       # - key: PROXY_PROVIDERS
       #   value: nguonc
+      # Đặt hai giá trị Xem20 bằng Render Dashboard → Environment → Add Secret.
+      # Không ghi credential thật vào file này.
+      # - key: XEM20_LOGIN
+      #   sync: false
+      # - key: XEM20_PASSWORD
+      #   sync: false

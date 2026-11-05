@@ -4,11 +4,11 @@ const { CONFIG } = require('./config');
 
 // ---------- HTTP ----------
 
-function fetchWithTimeout(url, opts = {}, timeoutMs = CONFIG.timeout) {
+async function fetchWithTimeout(url, opts = {}, timeoutMs = CONFIG.timeout) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    return fetch(url, { redirect: 'follow', ...opts, signal: ctrl.signal });
+    return await fetch(url, { redirect: 'follow', ...opts, signal: ctrl.signal });
   } finally {
     clearTimeout(t);
   }
