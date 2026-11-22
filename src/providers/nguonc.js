@@ -75,11 +75,20 @@ class NguoncProvider extends BaseProvider {
     const page = Math.max(1, Math.floor((parseInt(extra.skip, 10) || 0) / 10) + 1);
     if (extra.search) return (await this.search(extra.search)).map((i) => this.toMeta(i));
     let path = '/films/danh-sach/phim-le';
+    let wanted = null;
     if (kind === 'phim-bo') path = '/films/danh-sach/phim-bo';
     else if (kind === 'moi') path = '/films/phim-moi-cap-nhat';
+    else if (kind === 'thuyet-minh' || kind === 'thuyet-minh-bo') {
+      path = '/films/ngon-ngu/thuyet-minh';
+      wanted = kind.endsWith('-bo') ? 'series' : 'movie';
+    } else if (kind === 'long-tieng' || kind === 'long-tieng-bo') {
+      path = '/films/ngon-ngu/long-tieng';
+      wanted = kind.endsWith('-bo') ? 'series' : 'movie';
+    }
     const data = await this.request(`${this.cfg.apiUrl}${path}?page=${page}`);
     const items = (data && data.items) || [];
-    return items.map((i) => this.toMeta(toMetaItem(i)));
+    const metas = items.map((i) => this.toMeta(toMetaItem(i)));
+    return wanted ? metas.filter((m) => m.type === wanted) : metas;
   }
 
   async detail(slug) {

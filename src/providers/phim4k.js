@@ -11,7 +11,7 @@ class Phim4kProvider extends BaseProvider {
   normalizeItem(item, fallbackType = 'movie') {
     let type = fallbackType;
     if (item.type === 'single' || item.tmdb?.type === 'movie') type = 'movie';
-    else if (['series', 'hoathinh', 'tvshows'].includes(item.type) || item.tmdb?.type === 'series') type = 'series';
+    else if (['series', 'hoathinh', 'tvshows', 'tv'].includes(item.type) || ['series', 'tv'].includes(item.tmdb?.type)) type = 'series';
     return {
       slug: item.slug,
       name: item.name,
@@ -53,11 +53,20 @@ class Phim4kProvider extends BaseProvider {
   async listCatalog(kind, extra = {}) {
     const page = Math.max(1, Math.floor((parseInt(extra.skip, 10) || 0) / 20) + 1);
     if (extra.search) return (await this.search(extra.search)).map((i) => this.toMeta(i));
-    const path = kind === 'phim-bo' ? 'phim-bo' : 'phim-le';
-    const type = kind === 'phim-bo' ? 'series' : 'movie';
+    let path = 'phim-le';
+    let wanted = null;
+    if (kind === 'phim-bo') path = 'phim-bo';
+    else if (kind === 'thuyet-minh' || kind === 'thuyet-minh-bo') {
+      path = 'thuyet-minh';
+      wanted = kind.endsWith('-bo') ? 'series' : 'movie';
+    } else if (kind === 'long-tieng' || kind === 'long-tieng-bo') {
+      path = 'long-tieng';
+      wanted = kind.endsWith('-bo') ? 'series' : 'movie';
+    }
     const data = await this.request(`${this.cfg.apiUrl}/danh-sach/${path}?page=${page}&limit=20`);
     const items = (data && data.items) || (data && data.data && data.data.items) || [];
-    return items.map((i) => this.toMeta(this.normalizeItem(i, type)));
+    const metas = items.map((i) => this.toMeta(this.normalizeItem(i, 'movie')));
+    return wanted ? metas.filter((m) => m.type === wanted) : metas;
   }
 
   async detail(slug) {
@@ -82,7 +91,7 @@ class Phim4kProvider extends BaseProvider {
         name: m.name,
         originalName: m.origin_name,
         year: m.year,
-        type: ['series', 'hoathinh', 'tvshows'].includes(m.type) ? 'series' : 'movie',
+        type: ['series', 'hoathinh', 'tvshows', 'tv'].includes(m.type) ? 'series' : 'movie',
         quality: m.quality,
         lang: m.lang,
         time: m.time,

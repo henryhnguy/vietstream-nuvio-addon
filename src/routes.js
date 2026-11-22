@@ -17,6 +17,7 @@ const CTORS = {
   vnstream: 'VnstreamProvider',
   phim4k: 'Phim4kProvider',
   tophim: 'TophimProvider',
+  hdvnn: 'HdvnnProvider',
   k20: 'K20Provider',
   xem20: 'Xem20Provider'
 };

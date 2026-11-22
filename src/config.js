@@ -69,7 +69,17 @@ const PROVIDERS = {
     prefix: 'tp_',
     apiUrl: process.env.TOPHIM_API_URL || 'https://tophim.top',
     referer: 'https://tophim.top/',
-    enabled: ENABLED_LIST ? ENABLED_LIST.includes('tophim') : true,
+    // tophim.top chết DNS từ 23/11/2026 — tắt mặc định để không kéo dài thời gian tìm nguồn
+    enabled: ENABLED_LIST ? ENABLED_LIST.includes('tophim') : false,
+    proxy: false
+  },
+  hdvnn: {
+    id: 'hdvnn',
+    name: 'HDVNN',
+    prefix: 'hd_',
+    apiUrl: process.env.HDVNN_SITE_URL || 'https://hdvnn.xyz',
+    referer: 'https://hdvnn.xyz/',
+    enabled: ENABLED_LIST ? ENABLED_LIST.includes('hdvnn') : true,
     proxy: false
   },
   k20: {
@@ -111,10 +121,10 @@ const CONFIG = {
   proxyProviders: csv('PROXY_PROVIDERS', ['nguonc']),
   manifest: {
     id: 'community.vietstream',
-    version: process.env.VERSION || '1.1.0',
+    version: process.env.VERSION || '1.2.0',
     name: 'VietStream · Phim Việt',
     description:
-      'Xem phim Việt đa nguồn: KKphim, K20, Xem20 (tùy chọn), OPhim, NguonC, Phim4K, Tophim, VnStream — Vietsub, Lồng tiếng, Thuyết minh. Tương thích Nuvio & Stremio.'
+      'Xem phim Việt đa nguồn: KKphim, K20, HDVNN, OPhim, NguonC, Phim4K, VnStream — Vietsub, Lồng tiếng, Thuyết minh. Tương thích Nuvio & Stremio.'
   }
 };
 

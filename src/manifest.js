@@ -17,7 +17,9 @@ const CATALOG_DEFS = {
   ],
   nguonc: [
     { type: 'movie', id: 'nguonc-phim-le', name: 'Phim lẻ (NguonC)' },
-    { type: 'series', id: 'nguonc-phim-bo', name: 'Phim bộ (NguonC)' }
+    { type: 'series', id: 'nguonc-phim-bo', name: 'Phim bộ (NguonC)' },
+    { type: 'series', id: 'nguonc-thuyet-minh-bo', name: 'Thuyết Minh (NguonC)' },
+    { type: 'series', id: 'nguonc-long-tieng-bo', name: 'Lồng Tiếng (NguonC)' }
   ],
   vnstream: [
     { type: 'movie', id: 'vnstream-moi', name: 'Mới nhất (VnStream)' },
@@ -26,7 +28,13 @@ const CATALOG_DEFS = {
   ],
   phim4k: [
     { type: 'movie', id: 'phim4k-phim-le', name: 'Phim lẻ 4K (Phim4K)' },
-    { type: 'series', id: 'phim4k-phim-bo', name: 'Phim bộ 4K (Phim4K)' }
+    { type: 'series', id: 'phim4k-phim-bo', name: 'Phim bộ 4K (Phim4K)' },
+    { type: 'series', id: 'phim4k-thuyet-minh-bo', name: 'Thuyết Minh (Phim4K)' },
+    { type: 'series', id: 'phim4k-long-tieng-bo', name: 'Lồng Tiếng (Phim4K)' }
+  ],
+  hdvnn: [
+    { type: 'movie', id: 'hdvnn-moi', name: 'Mới cập nhật (HDVNN)' },
+    { type: 'series', id: 'hdvnn-bo', name: 'Phim bộ (HDVNN)' }
   ],
   tophim: [],
   k20: [

@@ -14,11 +14,12 @@ Việt theo giao thức addon chuẩn của Stremio nên cài trực tiếp vào
 | Nguồn | API | Trạng thái | Ghi chú |
 |---|---|---|---|
 | **KKphim** | `phimapi.com` | ✅ Hoạt động tốt | m3u8 trực tiếp, có sẵn IMDb ID, catalog + thể loại đầy đủ |
+| **HDVNN** | `hdvnn.xyz` | ✅ Mới (23/11/2026) | Site Vietsub + Thuyết Minh + Lồng Tiếng; player trả MP4 Google 1080p/720p/360p, nhãn audio lấy từ thẻ phim (VS/TM/LT) |
 | **K20** | `sc.k-20.xyz` | ✅ Hoạt động tốt | Backend Stremio công khai, gộp NguonC / HH3D / STP / VSMOV / Yan; giữ direct/proxy HLS, headers và subtitles của từng stream |
 | **Xem20 (Xem14 cũ)** | `xem20.net` | 🔐 Tùy chọn | Nguồn Fshare/downfshare yêu cầu tài khoản; chỉ bật khi Render có `XEM20_LOGIN` + `XEM20_PASSWORD` |
 | **NguonC** | `phim.nguonc.com/api` | ✅ Hoạt động tốt | Có m3u8 trực tiếp hoặc link StreamC (addon tự giải mã) |
 | **Phim4K** | `vsmov.com/api` | ✅ Hoạt động | Nhóm VSMOV 4K, tự giải mã embed → `master.m3u8`, nhiều server Thuyết minh |
-| **Tophim (Motchill)** | `tophim.top` | ✅ Hoạt động | Hậu duệ còn sống của nhà **Motchill / PhimMoi** (site tự nhận brand này), gộp thêm stream kkphim/ophim/nguonc; search API + slug theo TMDB ID |
+| **Tophim (Motchill)** | `tophim.top` | ❌ Chết 23/11/2026 | `tophim.top` mất DNS; `motchill.show` còn trang nhưng API `api.motchill.show` trả 503. Đã tắt mặc định, bật lại bằng `TOPHIM_API_URL` nếu CMS đổi domain |
 | **VnStream** | cobephim.biz (API riêng) | ⚠️ Tuỳ mạng | Lấy m3u8 từ trang xem phim; một số nhà mạng chặn, khi đó nguồn này tự bỏ qua |
 | **OPhim** | `ophim.live` (cấu hình được) | ⚠️ Tuỳ domain | OPhim gốc đã ngừng hoạt động; đổi domain bằng `OPHIM_API_URL` khi cần |
 
@@ -37,6 +38,7 @@ Nguồn nào chết/không truy cập được **tự động bỏ qua**, không
 - **Chấm điểm khớp thông minh** — ưu tiên IMDb ID trùng > tên gốc khớp tuyệt đối > khớp một phần, kèm kiểm tra năm sản xuất và số mùa ("Phần N") để tránh nhầm phim bộ nhiều mùa.
 - **Ghi nhãn audio** — mỗi stream ghi rõ `Vietsub / Lồng Tiếng / Thuyết Minh / Song Ngữ` + chất lượng (HD/FHD/4K) để phân biệt ngay trong danh sách stream.
 - **Catalog cho Discover** — Phim lẻ, Phim bộ, Chiếu rạp, Hoạt hình, 4K…; K20 bổ sung catalog đa nguồn và tìm kiếm riêng.
+- **Catalog theo audio** — thêm hàng **Thuyết Minh** và **Lồng Tiếng** lấy từ bộ lọc ngôn ngữ của NguonC và VSMOV/Phim4K (23/11/2026).
 - **Xem20 đăng nhập tùy chọn** — giữ cookie/CSRF ở server, trả direct `downfshare` play URL; không proxy video qua Render để bảo vệ quota.
 - **Tìm kiếm** — gõ tên phim (tiếng Việt không dấu hoặc tiếng Anh) là tìm được trên tất cả nguồn.
 - **Meta + danh sách tập** — mở phim từ catalog có đầy đủ poster, mô tả, danh sách tập để xem tiếp.
