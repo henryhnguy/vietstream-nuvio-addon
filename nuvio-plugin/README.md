@@ -7,7 +7,7 @@ không cần server riêng:
 | Nguồn | API | Ghi chú |
 |---|---|---|
 | KKphim | `phimapi.com` | m3u8 trực tiếp, Vietsub / Lồng tiếng / Thuyết minh |
-| Tophim (Motchill) | `tophim.top` | Nhà Motchill/PhimMoi còn sống; slug theo TMDB ID nên tra cực nhanh |
+| **HDVNN** | `hdvnn.xyz` | Vietsub + Thuyết Minh + Lồng Tiếng; player trả MP4 Google 1080p/720p/360p |
 | NguonC | `phim.nguonc.com/api` | m3u8 trực tiếp hoặc tự giải mã link StreamC |
 | Phim4K | `vsmov.com/api` | tự giải mã embed → `master.m3u8` |
 | OPhim | `ophim.live` (đổi được) | domain chết sẽ tự bỏ qua |
@@ -26,13 +26,13 @@ https://<ten-service>.onrender.com/nuvio-plugin/manifest.json
 
 (Addon server tự host plugin ở đường dẫn này — thay bằng URL Render thật của bạn.)
 
-**Cách 2 — GitHub raw (dự phòng):**
+**Cách 2 — jsDelivr (không phụ thuộc GitHub raw):**
 
 ```
-https://raw.githubusercontent.com/henryhnguy/vietstream-nuvio-addon/main/nuvio-plugin/manifest.json
+https://cdn.jsdelivr.net/gh/ngoctai125/vietstream-nuvio-addon@main/nuvio-plugin/manifest.json
 ```
 
-> ⚠️ raw.githubusercontent.com hay bị chặn/chậm ở một số nhà mạng Việt Nam — nếu cách 2 không thêm được repo, dùng cách 1.
+> ⚠️ jsDelivr cache khoảng 12 giờ; cần bản mới ngay thì dùng URL ghim commit (`@<sha>`).
 
 ## 📲 Cài vào Nuvio
 
@@ -44,7 +44,7 @@ https://raw.githubusercontent.com/henryhnguy/vietstream-nuvio-addon/main/nuvio-p
 1. Mở **Nuvio → Settings → Plugins** → **+ / Add repository** → dán URL manifest ở trên.
 2. Repo hiện ra với scraper **VietStream** → bật lên.
 3. Mở bất kỳ phim/series nào (Nuvio tra TMDB) → mục **Sources/Streams** sẽ hiện các luồng
-   `VietStream · KKphim`, `VietStream · Phim4K`… kèm nhãn audio (Vietsub • Lồng Tiếng • Thuyết Minh).
+   `VietStream · KKphim`, `HDVNN · Thuyết Minh`… kèm nhãn audio (Vietsub • Lồng Tiếng • Thuyết Minh).
 
 ## 🩺 Plugin không chạy? Kiểm tra theo thứ tự
 

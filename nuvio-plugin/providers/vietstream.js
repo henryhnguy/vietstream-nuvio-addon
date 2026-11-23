@@ -953,6 +953,8 @@ async function hdvnnStreams(info, type, season, episode) {
       }
     }
     if (out.length) {
+      var uniq = {};
+      out = out.filter(function (x) { var k = x.quality + '|' + x.name; if (uniq[k]) return false; uniq[k] = true; return true; });
       var rank = function (q) {
         return /4k|2160/i.test(q) ? 5 : /1080/i.test(q) ? 4 : /720/i.test(q) ? 3 : /360/i.test(q) ? 2 : 1;
       };

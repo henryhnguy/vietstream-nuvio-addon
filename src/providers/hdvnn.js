@@ -310,8 +310,10 @@ class HdvnnProvider extends BaseProvider {
         continue;
       }
     }
+    const seen = new Set();
+    const unique = streams.filter((s) => { const k = `${s.name}|${s.title}`; if (seen.has(k)) return false; seen.add(k); return true; });
     const rank = (q) => (/4k|2160/i.test(q) ? 5 : /1080/i.test(q) ? 4 : /720/i.test(q) ? 3 : /360/i.test(q) ? 2 : 1);
-    return streams.sort((a, b) => rank(b.name) - rank(a.name));
+    return unique.sort((a, b) => rank(b.name) - rank(a.name));
   }
 
   async listCatalog(kind, extra = {}) {
