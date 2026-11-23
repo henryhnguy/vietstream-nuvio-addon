@@ -35,7 +35,7 @@ async function getStreams(tmdbId, mediaType, season, episode) {
     if (!disabled.nguonc) providers.push({ name: 'nguonc', fn: nguoncStreams });
     if (!disabled.vnstream) providers.push({ name: 'vnstream', fn: vnstreamStreams });
     if (!disabled.phim4k) providers.push({ name: 'phim4k', fn: phim4kStreams });
-    if (!disabled.tophim) providers.push({ name: 'tophim', fn: tophimStreams });
+    if (!disabled.hdvnn) providers.push({ name: 'hdvnn', fn: hdvnnStreams });
 
     var results = await Promise.allSettled(
       providers.map(function (p) {
@@ -743,10 +743,230 @@ async function tophimStreams(info, type, season, episode) {
   return [];
 }
 
+/* ---------------- Nguồn: HDVNN (hdvnn.xyz) ---------------- */
+
+var HDVNN_BASE = 'https://hdvnn.xyz';
+
+function hdvnnQuality(url) {
+  var m = String(url).match(/=m(\d+)(?:$|[?&])/);
+  if (!m) return 'HD';
+  if (m[1] === '37') return '1080p';
+  if (m[1] === '22') return '720p';
+  if (m[1] === '18') return '360p';
+  return 'HD';
+}
+
+function hdvnnAudio(text, key) {
+  key = key || '';
+  if (/_lt_/i.test(key)) return 'Lồng Tiếng';
+  var s = String(text || '').toLowerCase();
+  var hasTM = /thuy[ếe]t\s*minh|\btm\b/.test(s);
+  var hasVS = /vietsub|\bvs\b/.test(s);
+  var hasLT = /l[ồo]ng\s*ti[ếe]ng|\blt\b/.test(s);
+  if (hasTM && hasVS) return 'Vietsub + TM';
+  if (hasTM && hasLT) return 'Thuyết Minh + LT';
+  if (hasTM) return 'Thuyết Minh';
+  if (hasLT) return 'Lồng Tiếng';
+  return 'Vietsub';
+}
+
+function hdvnnMakeStream(movieName, epLabel, audio, quality, url, type) {
+  return {
+    name: 'HDVNN · ' + (audio || 'Vietsub'),
+    title: [epLabel, quality, audio].filter(Boolean).join(' • ') + (movieName ? ' • ' + movieName : ''),
+    url: url,
+    quality: quality || 'HD',
+    type: type || 'mp4',
+    language: 'vi',
+    provider: 'HDVNN',
+    headers: /googleusercontent/i.test(url) ? { 'User-Agent': UA } : { 'User-Agent': UA, Referer: HDVNN_BASE + '/' }
+  };
+}
+
+async function hdvnnSearch(titles) {
+  for (var ti = 0; ti < titles.length; ti++) {
+    var q = String(titles[ti] || '').trim();
+    if (!q) continue;
+    var slug = q.toLowerCase().replace(/\s+/g, '-');
+    var html = await fetchText(HDVNN_BASE + '/tim-kiem/' + encodeURIComponent(slug) + '.html', {
+      'User-Agent': UA,
+      Referer: HDVNN_BASE + '/',
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+    });
+    if (!html) continue;
+    var $ = cheerio.load(html);
+    var items = [];
+    var seen = {};
+    $('a[href*="/thong-tin-phim/"]').each(function (i, el) {
+      var href = $(el).attr('href') || '';
+      var m = href.match(/\/thong-tin-phim\/([^\/?#]+)\.html/);
+      if (!m || seen[m[1]]) return;
+      var name = String($(el).attr('title') || $(el).find('.name-movie').text() || '').replace(/\s+/g, ' ').trim();
+      if (!name) return;
+      seen[m[1]] = true;
+      var epText = String($(el).find('.episode-latest').text() || '').replace(/\s+/g, ' ').trim();
+      var isSeries = /\d+\s*\/\s*\d+/.test(epText) && !/^full$/i.test(epText);
+      var yearMatch = String($(el).text() || '').match(/\(?(20\d{2})\)?/);
+      items.push({
+        slug: m[1],
+        name: name,
+        originalName: name,
+        year: yearMatch ? parseInt(yearMatch[1], 10) : null,
+        type: isSeries ? 'series' : 'movie'
+      });
+    });
+    if (items.length) return items;
+  }
+  return [];
+}
+
+async function hdvnnDetail(slug) {
+  var html = await fetchText(HDVNN_BASE + '/thong-tin-phim/' + encodeURIComponent(slug) + '.html', {
+    'User-Agent': UA,
+    Referer: HDVNN_BASE + '/'
+  });
+  if (!html) return null;
+  var $ = cheerio.load(html);
+  var name = String($('h1').first().text() || slug).replace(/\s+/g, ' ').trim();
+  var audio = String($('meta[name="description"]').attr('content') || '').trim();
+  var eps = [];
+  var seen = {};
+  $('a[href*="/xem-phim/"]').each(function (i, el) {
+    var href = $(el).attr('href') || '';
+    if (!/\/xem-phim\//.test(href) || seen[href]) return;
+    var label = String($(el).text() || '').replace(/\s+/g, ' ').trim();
+    if (!label || /play_circle/i.test(label)) return;
+    seen[href] = true;
+    var num = parseEpNum(label);
+    var isFull = /full/i.test(label);
+    eps.push({ name: label, url: href, num: num || (isFull ? 1 : null) });
+  });
+  eps.sort(function (a, b) { return (a.num || 9999) - (b.num || 9999); });
+  if (!eps.length) return null;
+  var isSeries = eps.length > 1 || eps.some(function (e) { return e.num && e.num > 1; });
+  return {
+    slug: slug,
+    name: name,
+    audio: audio,
+    type: isSeries ? 'series' : 'movie',
+    episodes: eps
+  };
+}
+
+async function hdvnnPlayer(epUrl) {
+  var res = await fetch(epUrl, {
+    method: 'GET',
+    headers: { 'User-Agent': UA, Referer: HDVNN_BASE + '/', Accept: 'text/html,*/*' },
+    redirect: 'follow'
+  });
+  if (!res || !res.ok) return null;
+  var html = await res.text();
+  var setCookie = (res.headers && res.headers.get('set-cookie')) || '';
+  var cookie = setCookie
+    .split(/,\s*(?=[^;,\s]+=)/)
+    .map(function (c) { return String(c).split(';')[0].trim(); })
+    .filter(Boolean)
+    .join('; ');
+  var csrf = (html.match(/<meta name="csrf-token" content="([^"]+)"/) || [])[1];
+  var movieId = (html.match(/MovieID:\s*(\d+)/) || [])[1];
+  var episodeId = (html.match(/EpisodeID:\s*(\d+)/) || [])[1];
+  if (!csrf || !movieId || !episodeId) return null;
+  var body = 'MovieID=' + encodeURIComponent(movieId) + '&EpisodeID=' + encodeURIComponent(episodeId);
+  var r = await fetch(HDVNN_BASE + '/server/ajax/player', {
+    method: 'POST',
+    headers: {
+      'User-Agent': UA,
+      Referer: epUrl,
+      Origin: HDVNN_BASE,
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRF-TOKEN': csrf,
+      Cookie: cookie,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: body
+  });
+  if (!r || !r.ok) return null;
+  return await r.json();
+}
+
+async function hdvnnResolveVnn(embedUrl) {
+  var html = await fetchText(embedUrl, { 'User-Agent': UA, Referer: HDVNN_BASE + '/' });
+  if (!html) return [];
+  var tokens = html.match(/aHR0c[A-Za-z0-9+\/=]+/g) || [];
+  var out = [];
+  var seen = {};
+  for (var i = 0; i < tokens.length; i++) {
+    try {
+      var url = atob(tokens[i]);
+      if (!/^https?:\/\//i.test(url)) continue;
+      if (!/googleusercontent|\.mp4|\.m3u8/i.test(url) || seen[url]) continue;
+      seen[url] = true;
+      out.push({ url: url, quality: hdvnnQuality(url) });
+    } catch (e) { /* token lỗi, bỏ */ }
+  }
+  return out;
+}
+
+async function hdvnnStreams(info, type, season, episode) {
+  var isMovie = type !== 'tv';
+  var epNum = isMovie ? null : parseInt(episode, 10) || 1;
+  var items = await hdvnnSearch(info.titles || []);
+  if (!items.length) return [];
+  var cands = rankCandidates(items, info.titles || [], info.year, season, !isMovie);
+  if (!cands.length) return [];
+
+  for (var ci = 0; ci < cands.length; ci++) {
+    var d = await hdvnnDetail(cands[ci].slug);
+    if (!d) continue;
+    var ep = isMovie
+      ? d.episodes[0]
+      : d.episodes.filter(function (e) { return e.num === epNum; })[0] || d.episodes[0];
+    if (!ep || !ep.url) continue;
+
+    var player = await hdvnnPlayer(ep.url);
+    if (!player || Number(player.code) !== 200) continue;
+
+    var out = [];
+    var seenUrl = {};
+    var keys = Object.keys(player);
+    for (var ki = 0; ki < keys.length; ki++) {
+      var key = keys[ki];
+      if (!/^src_/.test(key)) continue;
+      var raw = String(player[key] || '').replace(/&amp;/g, '&');
+      if (!/^https?:\/\//i.test(raw)) continue;
+      var audio = hdvnnAudio(d.audio, key);
+      if (/\.m3u8(\?|$)/i.test(raw)) {
+        if (!seenUrl[raw]) { seenUrl[raw] = true; out.push(hdvnnMakeStream(d.name, isMovie ? 'Full' : 'Tập ' + epNum, audio, 'HD', raw, 'hls')); }
+        continue;
+      }
+      if (/\.mp4(\?|$)/i.test(raw)) {
+        if (!seenUrl[raw]) { seenUrl[raw] = true; out.push(hdvnnMakeStream(d.name, isMovie ? 'Full' : 'Tập ' + epNum, audio, qualityFromText(raw, 'HD'), raw, 'mp4')); }
+        continue;
+      }
+      if (/vk\.com|youtube\.com|facebook\.com/i.test(raw)) continue;
+      var resolved = await hdvnnResolveVnn(raw);
+      for (var ri = 0; ri < resolved.length; ri++) {
+        var u = resolved[ri].url;
+        if (seenUrl[u]) continue;
+        seenUrl[u] = true;
+        out.push(hdvnnMakeStream(d.name, isMovie ? 'Full' : 'Tập ' + epNum, audio, resolved[ri].quality, u, 'mp4'));
+      }
+    }
+    if (out.length) {
+      var rank = function (q) {
+        return /4k|2160/i.test(q) ? 5 : /1080/i.test(q) ? 4 : /720/i.test(q) ? 3 : /360/i.test(q) ? 2 : 1;
+      };
+      out.sort(function (a, b) { return rank(b.quality) - rank(a.quality); });
+      return out;
+    }
+  }
+  return [];
+}
+
 /* ---------------- Xuất hàm cho runtime Nuvio ---------------- */
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { getStreams: getStreams };
+  module.exports = { getStreams: getStreams, hdvnnStreams: hdvnnStreams };
 }
 if (typeof globalThis !== 'undefined') globalThis.getStreams = getStreams;
 if (typeof global !== 'undefined') global.getStreams = getStreams;
